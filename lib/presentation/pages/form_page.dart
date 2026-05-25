@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/models/gema.dart';
+import '../../data/services/gema_service.dart';
 
 class FormPage extends StatefulWidget {
-  final Gema? gema;
-  const FormPage({this.gema, super.key});
+  final Gema? gema;        // Para edição
+  final String? parentId;  // ← NOVO: Para criar sub-gema
+
+  const FormPage({
+    super.key,
+    this.gema,
+    this.parentId,
+  });
 
   @override
   State<FormPage> createState() => _FormPageState();
@@ -12,41 +19,62 @@ class FormPage extends StatefulWidget {
 
 class _FormPageState extends State<FormPage> {
   final _formKey = GlobalKey<FormState>();
+  final GemaService service = GemaService();
 
-  late TextEditingController _nomeCtrl;
-  late TextEditingController _tipoCtrl;
-  late TextEditingController _corCtrl;
-  late TextEditingController _pesoCtrl;
-  late TextEditingController _valorCtrl;
-  late TextEditingController _origemCtrl;
+  late TextEditingController _nomeController;
+  late TextEditingController _tipoController;
+  late TextEditingController _corController;
+  late TextEditingController _caratsController;
+  late TextEditingController _valorController;
+  late TextEditingController _origemController;
 
   @override
   void initState() {
     super.initState();
-    _nomeCtrl = TextEditingController(text: widget.gema?.nome);
-    _tipoCtrl = TextEditingController(text: widget.gema?.tipo);
-    _corCtrl = TextEditingController(text: widget.gema?.cor);
-    _pesoCtrl = TextEditingController(text: widget.gema?.carats.toString());
-    _valorCtrl = TextEditingController(text: widget.gema?.valorEstimado.toString());
-    _origemCtrl = TextEditingController(text: widget.gema?.origem);
+    _nomeController = TextEditingController(text: widget.gema?.nome);
+    _tipoController = TextEditingController(text: widget.gema?.tipo);
+    _corController = TextEditingController(text: widget.gema?.cor);
+    _caratsController = TextEditingController(text: widget.gema?.carats.toString());
+    _valorController = TextEditingController(text: widget.gema?.valorEstimado.toString());
+    _origemController = TextEditingController(text: widget.gema?.origem);
   }
 
   @override
   void dispose() {
-    _nomeCtrl.dispose();
-    _tipoCtrl.dispose();
-    _corCtrl.dispose();
-    _pesoCtrl.dispose();
-    _valorCtrl.dispose();
-    _origemCtrl.dispose();
+    _nomeController.dispose();
+    _tipoController.dispose();
+    _corController.dispose();
+    _caratsController.dispose();
+    _valorController.dispose();
+    _origemController.dispose();
     super.dispose();
+  }
+
+  void _salvar() {
+    if (_formKey.currentState!.validate()) {
+      final gema = Gema(
+        id: widget.gema?.id ?? const Uuid().v4(),
+        nome: _nomeController.text.trim(),
+        tipo: _tipoController.text.trim(),
+        cor: _corController.text.trim(),
+        carats: double.parse(_caratsController.text),
+        valorEstimado: double.parse(_valorController.text),
+        origem: _origemController.text.trim(),
+        parentId: widget.parentId,   // ← Aqui salva o pai
+      );
+
+      Navigator.pop(context, gema);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool isEditing = widget.gema != null;
+    final bool isSubGema = widget.parentId != null;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.gema == null ? 'Nova Gema' : 'Editar Gema'),
+        title: Text(isEditing ? 'Editar Gema' : isSubGema ? 'Nova Sub-Gema' : 'Nova Gema'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -54,53 +82,63 @@ class _FormPageState extends State<FormPage> {
           key: _formKey,
           child: ListView(
             children: [
+              if (isSubGema)
+                Card(
+                  color: Colors.green[50],
+                  child: const ListTile(
+                    leading: Icon(Icons.subdirectory_arrow_right, color: Colors.green),
+                    title: Text('Sub-gema'),
+                    subtitle: Text('Esta gema será filha de outra'),
+                  ),
+                ),
+              const SizedBox(height: 16),
               TextFormField(
-                controller: _nomeCtrl,
-                decoration: const InputDecoration(labelText: 'Nome da Gema *'),
+                controller: _nomeController,
+                decoration: const InputDecoration(labelText: 'Nome da Gema'),
                 validator: (value) => value!.isEmpty ? 'Campo obrigatório' : null,
               ),
               TextFormField(
-                controller: _tipoCtrl,
-                decoration: const InputDecoration(labelText: 'Tipo (Ex: Esmeralda, Rubi)'),
+                controller: _tipoController,
+                decoration: const InputDecoration(labelText: 'Tipo'),
+                validator: (value) => value!.isEmpty ? 'Campo obrigatório' : null,
               ),
               TextFormField(
-                controller: _corCtrl,
+                controller: _corController,
                 decoration: const InputDecoration(labelText: 'Cor'),
+                validator: (value) => value!.isEmpty ? 'Campo obrigatório' : null,
               ),
               TextFormField(
-                controller: _pesoCtrl,
-                decoration: const InputDecoration(labelText: 'Peso em Quilates'),
+                controller: _caratsController,
+                decoration: const InputDecoration(labelText: 'Peso (quilates)'),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                validator: (value) {
+                  if (value!.isEmpty) return 'Campo obrigatório';
+                  if (double.tryParse(value) == null) return 'Valor inválido';
+                  return null;
+                },
               ),
               TextFormField(
-                controller: _valorCtrl,
+                controller: _valorController,
                 decoration: const InputDecoration(labelText: 'Valor Estimado (RS)'),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                validator: (value) {
+                  if (value!.isEmpty) return 'Campo obrigatório';
+                  if (double.tryParse(value) == null) return 'Valor inválido';
+                  return null;
+                },
               ),
               TextFormField(
-                controller: _origemCtrl,
+                controller: _origemController,
                 decoration: const InputDecoration(labelText: 'Origem'),
+                validator: (value) => value!.isEmpty ? 'Campo obrigatório' : null,
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    final gema = Gema(
-                      id: widget.gema?.id ?? const Uuid().v4(),
-                      nome: _nomeCtrl.text.trim(),
-                      tipo: _tipoCtrl.text.trim(),
-                      cor: _corCtrl.text.trim(),
-                      carats: double.tryParse(_pesoCtrl.text) ?? 0.0,
-                      valorEstimado: double.tryParse(_valorCtrl.text) ?? 0.0,
-                      origem: _origemCtrl.text.trim(),
-                    );
-                    Navigator.pop(context, gema);
-                  }
-                },
-                child: Text(
-                  widget.gema == null ? 'Cadastrar Gema' : 'Salvar Alterações',
-                  style: const TextStyle(fontSize: 16),
+                onPressed: _salvar,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
+                child: Text(isEditing ? 'Atualizar Gema' : 'Cadastrar Gema'),
               ),
             ],
           ),
