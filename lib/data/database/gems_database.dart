@@ -96,7 +96,6 @@ class GemaDatabase {
         roots.add(gema);
       } else if (gemasMap.containsKey(gema.parentId)) {
         gemasMap[gema.parentId]!.filhos.add(gema);
-        gemasMap[gema.parentId]!.filhos.add(gema);
       }
     }
 
