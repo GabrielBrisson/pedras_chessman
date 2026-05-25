@@ -30,7 +30,14 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('Pedras do Chessman'),
         centerTitle: true,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
       ),
+      drawer: _buildDrawer(context),
       body: service.gemas.isEmpty
           ? const Center(
         child: Text(
@@ -52,7 +59,67 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // =================== WIDGET PRINCIPAL ===================
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.deepPurple,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  'Pedras do Chessman',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Gestão de Gemas',
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
+                ),
+              ],
+            ),
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.home),
+            title: const Text('Início'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.add_circle),
+            title: const Text('Novo Cadastro'),
+            onTap: () {
+              Navigator.pop(context);
+              _adicionarGema(context);
+            },
+          ),
+
+          const Divider(),
+
+          ListTile(
+            leading: const Icon(Icons.list_alt),
+            title: const Text('Todas as Gemas'),
+            onTap: () {
+              Navigator.pop(context);
+              // Já estamos na tela principal
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildGemaTile(Gema gema, int nivel) {
     final bool temFilhos = gema.filhos.isNotEmpty;
 
@@ -114,7 +181,6 @@ class _HomePageState extends State<HomePage> {
               onTap: () => _adicionarSubGema(context, gema),
             ),
 
-            // Botão extra para ver detalhes dentro do ExpansionTile
             ListTile(
               leading: const Icon(Icons.info_outline),
               title: const Text('Ver detalhes completos'),
@@ -126,7 +192,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // =================== AÇÕES ===================
   void _adicionarGema(BuildContext context) async {
     final novaGema = await Navigator.push(
       context,
@@ -207,11 +272,16 @@ class _HomePageState extends State<HomePage> {
 
   Color _getCorGema(String cor) {
     switch (cor.toLowerCase()) {
-      case 'azul': return Colors.blue;
-      case 'vermelho': return Colors.red;
-      case 'verde': return Colors.green;
-      case 'amarelo': return Colors.yellow;
-      default: return Colors.purple;
+      case 'azul':
+        return Colors.blue;
+      case 'vermelho':
+        return Colors.red;
+      case 'verde':
+        return Colors.green;
+      case 'amarelo':
+        return Colors.yellow;
+      default:
+        return Colors.purple;
     }
   }
 }

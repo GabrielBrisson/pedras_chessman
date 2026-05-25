@@ -74,6 +74,8 @@ class GemaDatabase {
 
   Future<List<Gema>> getAll() async {
     final db = await instance.database;
+    final dbpath = await getDatabasesPath();
+    print(dbpath);
     final result = await db.query('gemas', orderBy: 'nome');
     return result.map((json) => Gema.fromMap(json)).toList();
   }
@@ -93,6 +95,7 @@ class GemaDatabase {
       if (gema.parentId == null) {
         roots.add(gema);
       } else if (gemasMap.containsKey(gema.parentId)) {
+        gemasMap[gema.parentId]!.filhos.add(gema);
         gemasMap[gema.parentId]!.filhos.add(gema);
       }
     }
