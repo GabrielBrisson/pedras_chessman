@@ -1,49 +1,42 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import '../database/gems_database.dart';
 import '../models/gema.dart';
 
 class GemaService {
+  final GemaDatabase _db = GemaDatabase.instance;
+
   List<Gema> _gemas = [];
-  late File _arquivo;
 
   List<Gema> get gemas => _gemas;
 
-  Future<void> _salvarGemas() async {
-    String conteudo = json.encode(_gemas.map((g) => g.toJson()).toList());
-    await _arquivo.writeAsString(conteudo);
-  }
-
   Future<void> getGems() async {
-    try {
-      final dir = await getApplicationDocumentsDirectory();
-      _arquivo = File('${dir.path}/gemas.json');
+    _gemas = await _db.getAllHierarchical();
+  }
 
-      if (await _arquivo.exists()) {
-        String conteudo = await _arquivo.readAsString();
-        List<dynamic> dados = json.decode(conteudo);
-        _gemas = dados.map((item) => Gema.fromJson(item)).toList();
-      }
-    } catch (e) {
-      _gemas = [];
+  Future<void> add(Gema gema) async {
+    await _db.insert(gema);
+    await getGems();
+  }
+
+  Future<void> update(Gema gemaAtualizada) async {
+    await _db.update(gemaAtualizada);
+    await getGems();
+  }
+
+  Future<void> delete(String id) async {
+    await _db.delete(id);
+    await getGems();
+
+    Future<List<Gema>> getFilhos(String parentId) async {
+      return await _db.getFilhos(parentId);
     }
-  }
 
-  void add(Gema gema) {
-    _gemas.add(gema);
-    _salvarGemas();
-  }
-
-  void update(Gema gemaAtualizada) {
-    int index = _gemas.indexWhere((g) => g.id == gemaAtualizada.id);
-    if (index != -1) {
-      _gemas[index] = gemaAtualizada;
-      _salvarGemas();
+    Future<bool> hasFilhos(String id) async {
+      return await _db.hasFilhos(id);
     }
-  }
 
-  void delete(String id) {
-    _gemas.removeWhere((g) => g.id == id);
-    _salvarGemas();
+    Future<void> deleteAll() async {
+      await _db.deleteAll();
+      _gemas.clear();
+    }
   }
 }

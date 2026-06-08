@@ -1,3 +1,5 @@
+import 'package:uuid/uuid.dart';
+
 class Gema {
   final String id;
   String nome;
@@ -6,6 +8,8 @@ class Gema {
   double carats;
   double valorEstimado;
   String origem;
+  String? parentId;
+  List<Gema> filhos = [];
 
   Gema({
     required this.id,
@@ -15,9 +19,13 @@ class Gema {
     required this.carats,
     required this.valorEstimado,
     required this.origem,
-  });
+    this.parentId,
+    List<Gema>? filhos,
+  }) {
+    this.filhos = filhos ?? [];
+  }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toMap() {
     return {
       'id': id,
       'nome': nome,
@@ -26,18 +34,21 @@ class Gema {
       'carats': carats,
       'valorEstimado': valorEstimado,
       'origem': origem,
+      'parentId': parentId,
     };
   }
 
-  factory Gema.fromJson(Map<String, dynamic> json) {
+  factory Gema.fromMap(Map<String, dynamic> map) {
     return Gema(
-      id: json['id'],
-      nome: json['nome'],
-      tipo: json['tipo'],
-      cor: json['cor'],
-      carats: json['carats'].toDouble(),
-      valorEstimado: json['valorEstimado'].toDouble(),
-      origem: json['origem'],
+      id: map['id'],
+      nome: map['nome'],
+      tipo: map['tipo'],
+      cor: map['cor'],
+      carats: map['carats'].toDouble(),
+      valorEstimado: map['valorEstimado'].toDouble(),
+      origem: map['origem'],
+      parentId: map['parentId'],
+      filhos: [],
     );
   }
 }
