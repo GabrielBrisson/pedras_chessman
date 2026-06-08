@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1068510564518",
+    "firebase_url": "https://pedras-chessman-projeto-default-rtdb.firebaseio.com",
+    "project_id": "pedras-chessman-projeto",
+    "storage_bucket": "pedras-chessman-projeto.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1068510564518:android:92ba990acb84dc8e1b2467",
+        "android_client_info": {
+          "package_name": "com.example.pedraschessman"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJrieGtNLD6J5dYnTMbB9RHU1ZkH_0tQA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
